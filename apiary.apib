@@ -14,9 +14,43 @@ Sample APIs for Experiments
         [
             {
                 "question": "Favourite programming language?",
-                "time_stamp": "2015-08-05T08:40:51.620Z",
+                "time_stamp": "2015-08-05T08:42:51.620Z",
                 "user": "sk_solutions",
                 "vote_count": 300
                 
-            }Demo
+            }
         ]
+        
+        
+## Simple POst endpoint   [/post-here/please]
+
+### Get Top Questions of Day [POST]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "question": "Favourite programming language?",
+                "time_stamp": "2015-08-05T08:42:51.620Z",
+                "user": "sk_solutions",
+                "vote_count": 300
+                
+            }
+        ]
+        
+        
+        
+        
+        
+
+## Simple XML endpoint   [/xml-endpoint/twilio.xml]
+### Twilio api Response that you want user to get  [POST]
+
++ Response 200 (text/xml)
+    + Body
+
+            <?xml version="1.0"?>
+            <Response>
+                <Say voice="alice">Get to the Choppa and ShutDown the VPN</Say>
+            <Play>http://demo.twilio.com/docs/classic.mp3</Play>
+            </Response>
