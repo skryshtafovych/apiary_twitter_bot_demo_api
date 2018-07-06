@@ -5,26 +5,9 @@ HOST: http://polls.apiblueprint.org/
 
 Sample APIs for Experiments
 
-## Sample Twitter Bot  [/sk-solutions/twitter-bot/top-question]
+## Twitter Bot  [/sk-solutions/twitter-bot/top-question]
 
-### Get Top Questions of Day [GET]
-
-+ Response 200 (application/json)
-
-        [
-            {
-                "question": "Favourite programming language?",
-                "time_stamp": "2015-08-05T08:42:51.620Z",
-                "user": "sk_solutions",
-                "vote_count": 300
-                
-            }
-        ]
-        
-        
-## Simple POst endpoint   [/post-here/please]
-
-### Get Top Questions of Day [POST]
+### Top Questions [GET]
 
 + Response 200 (application/json)
 
@@ -39,11 +22,28 @@ Sample APIs for Experiments
         ]
         
         
-        
-        
-## Simple POst endpoint   [/twilio/call-butler]
+## Simple Post endpoint   [/post-here/please]
 
-### Get Top Questions of Day [POST]
+### Post Here [POST]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "question": "Favourite programming language?",
+                "time_stamp": "2015-08-05T08:42:51.620Z",
+                "user": "sk_solutions",
+                "vote_count": 300
+                
+            }
+        ]
+        
+        
+        
+        
+## Call Butler    [/twilio/call-butler]
+
+### Call Butler [POST]
 
 + Response 200 (application/json)
 
