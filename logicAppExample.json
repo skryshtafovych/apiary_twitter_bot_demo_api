@@ -1,0 +1,248 @@
+{
+    "$connections": {
+        "value": {
+            "sql": {
+                "connectionId": "  ADD YOUR SQL,TWITTER and FACEBOOK Connector string",
+                "connectionName": "sql-2",
+                "id": "  ADD YOUR SQL,TWITTER and FACEBOOK Connector string"
+            },
+            "twitter_1": {
+                "connectionId": "  ADD YOUR SQL,TWITTER and FACEBOOK Connector string",
+                "connectionName": "twitter-2",
+                "id": "  ADD YOUR SQL,TWITTER and FACEBOOK Connector string"
+            }
+        }
+    },
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Condition": {
+                "actions": {
+                    "Insert_row": {
+                        "inputs": {
+                            "body": {
+                                "question": "@variables('questionofDay')",
+                                "rawJSON": "@{body('HTTP')}",
+                                "timeStamp": "@variables('timeStamp')"
+                            },
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['sql']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/datasets/default/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Apiary_Question_Of_Day]'))}/items"
+                        },
+                        "runAfter": {},
+                        "type": "ApiConnection"
+                    },
+                    "Post_a_tweet": {
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['twitter_1']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/posttweet",
+                            "queries": {
+                                "tweetText": "Question of Day Bot:@{variables('questionofDay')}"
+                            }
+                        },
+                        "runAfter": {
+                            "Insert_row": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ApiConnection"
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@empty(body('Parse_JSON_2')?['ResultSets'])",
+                                true
+                            ]
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Parse_JSON_2": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "If"
+            },
+            "Execute_a_SQL_query": {
+                "inputs": {
+                    "body": {
+                        "query": "SELECT * FROM [dbo].[Apiary_Question_Of_Day] WHERE [timeStamp] LIKE '%@{variables('timeStamp')}%'"
+                    },
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "path": "/datasets/default/query/sql"
+                },
+                "runAfter": {
+                    "For_each": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection"
+            },
+            "For_each": {
+                "actions": {
+                    "Set_variable": {
+                        "inputs": {
+                            "name": "timeStamp",
+                            "value": "@items('For_each')['time_stamp']"
+                        },
+                        "runAfter": {},
+                        "type": "SetVariable"
+                    },
+                    "Set_variable_2": {
+                        "inputs": {
+                            "name": "questionofDay",
+                            "value": "@items('For_each')['question']"
+                        },
+                        "runAfter": {
+                            "Set_variable": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "SetVariable"
+                    }
+                },
+                "foreach": "@body('Parse_JSON')",
+                "runAfter": {
+                    "Initialize_variable_2": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            },
+            "HTTP": {
+                "inputs": {
+                    "method": "GET",
+                    "uri": "https://private-4d97a-sksolutions.apiary-mock.com/sk-solutions/twitter-bot/top-question"
+                },
+                "runAfter": {},
+                "type": "Http"
+            },
+            "Initialize_variable": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "timeStamp",
+                            "type": "String"
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            },
+            "Initialize_variable_2": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "questionofDay",
+                            "type": "String"
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Initialize_variable": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            },
+            "Parse_JSON": {
+                "inputs": {
+                    "content": "@body('HTTP')",
+                    "schema": {
+                        "items": {
+                            "properties": {
+                                "question": {
+                                    "type": "string"
+                                },
+                                "time_stamp": {
+                                    "type": "string"
+                                },
+                                "user": {
+                                    "type": "string"
+                                },
+                                "vote_count": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "question",
+                                "time_stamp",
+                                "user",
+                                "vote_count"
+                            ],
+                            "type": "object"
+                        },
+                        "type": "array"
+                    }
+                },
+                "runAfter": {
+                    "HTTP": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Parse_JSON_2": {
+                "inputs": {
+                    "content": "@body('Execute_a_SQL_query')",
+                    "schema": {
+                        "properties": {
+                            "OutputParameters": {
+                                "properties": {},
+                                "type": "object"
+                            },
+                            "ResultSets": {
+                                "properties": {},
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "runAfter": {
+                    "Execute_a_SQL_query": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            }
+        },
+        "triggers": {
+            "Recurrence": {
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "type": "Recurrence"
+            }
+        }
+    }
+}
